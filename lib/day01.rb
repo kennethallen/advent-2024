@@ -4,9 +4,8 @@ def day01(lines)
   end
 
   lists = (0..1).map do |i|
-    lines.map {|l| l[i] }
+    lines.map {|l| l[i] }.sort!
   end
-  lists.each(&:sort!)
 
   l1_counts = Hash.new(0)
   lists[1].each do |n|
@@ -14,7 +13,7 @@ def day01(lines)
   end
 
   [
-    lists[0].zip(lists[1]).map {|vals| (vals[0] - vals[1]).abs }.sum,
+    lists[0].zip(lists[1]).map {|v0, v1| (v0 - v1).abs }.sum,
     lists[0].map {|n| n * l1_counts[n] }.sum,
   ]
 end
