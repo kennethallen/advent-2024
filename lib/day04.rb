@@ -2,6 +2,7 @@ def day04(lines)
   lines = lines.to_a
   dims = [lines.length, lines.map(&:length).min - 1]
   target = "XMAS"
+  target1 = "MAS"
 
   [
     (0...dims[0]).flat_map do |x|
@@ -16,6 +17,14 @@ def day04(lines)
         ].flatten
       end
     end.count {|e| [target, target.reverse].include? e },
-    0,
+    
+    (0..dims[0]-target1.length).sum do |x|
+      (0..dims[1]-target1.length).count do |y|
+        [
+          (0...target1.length).map {|i| lines[x+i][y+i] }.join,
+          (0...target1.length).map {|i| lines[x+i][y+target1.length-1-i] }.join,
+        ].all? {|e| [target1, target1.reverse].include? e }
+      end
+    end,
   ]
 end
