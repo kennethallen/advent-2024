@@ -83,7 +83,6 @@ def day06(lines)
   pos = start_pos(lines)
 
   history, _, loop_count = walk(walls, dims, pos, :n)
-  p loop_count
   [
     history.length,
     loop_count,
