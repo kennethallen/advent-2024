@@ -34,19 +34,16 @@ private def start_pos(lines)
   end
 end
 
-private def walk(lines, dims, pos, dir)
+private def walk(walls, dims, pos, dir)
   history = Hash.new {|h, k| h[k] = Set.new }
   until history[pos].include? dir
     history[pos] << dir
 
-    forward = step(pos, dir, dims)
-    return history, :edge if !forward
-    if lines[forward[0]][forward[1]] == "#"
+    pos = loop do
+      forward = step(pos, dir, dims)
+      return history, :edge if !forward
+      break forward unless walls.include? forward
       dir = turn_right(dir)
-      pos = step(pos, dir, dims)
-      return history, :edge if !pos
-    else
-      pos = forward
     end
   end
   [history, :loop]
@@ -55,19 +52,16 @@ end
 def day06(lines)
   lines = lines.to_a
   dims = [lines.length, lines.empty? ? 0 : lines[0].length - 1]
+  walls = lines.each_with_index.flat_map do |l, y|
+    l.each_char.each_with_index.filter_map {|c, x| [y, x] if lines[y][x] == "#" }
+  end.to_set
   pos = start_pos(lines)
 
+  history, _ = walk(walls, dims, pos, :n)
   [
-    walk(lines, dims, pos, :n)[0].length,
-    (0...dims[0]).sum do |y|
-      (0...dims[1]).count do |x|
-        lines[y][x] != "#" && begin
-          new_lines = lines.dup
-          new_lines[y] = new_lines[y].dup
-          new_lines[y][x] = "#"
-          walk(new_lines, dims, pos, :n)[1] == :loop
-        end
-      end
+    history.length,
+    history.keys.count do |new_wall|
+      walk(walls | [new_wall], dims, pos, :n)[1] == :loop
     end,
   ]
 end
