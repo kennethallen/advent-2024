@@ -36,17 +36,42 @@ end
 
 private def walk(walls, dims, pos, dir)
   history = Hash.new {|h, k| h[k] = Set.new }
-  until history[pos].include? dir
-    history[pos] << dir
-
-    pos = loop do
+  loop_wall_count = 0
+  loop_wall_tested = Set.new
+  loop do
+    next_pos = loop do
       forward = step(pos, dir, dims)
-      return history, :edge if !forward
+      return history, :edge, loop_wall_count unless forward
       break forward unless walls.include? forward
       dir = turn_right(dir)
     end
+    unless loop_wall_tested.include? next_pos
+      loop_wall_tested << next_pos
+      if walk_inner(history.dup, walls | [next_pos], dims, pos, dir) == :loop
+        loop_wall_count += 1
+      end
+    end
+    pos = next_pos
+
+    break if history[pos].include? dir
+    history[pos] << dir
   end
-  [history, :loop]
+  [history, :loop, loop_wall_count]
+end
+
+private def walk_inner(history, walls, dims, pos, dir)
+  loop do
+    pos = loop do
+      forward = step(pos, dir, dims)
+      return :edge unless forward
+      break forward unless walls.include? forward
+      dir = turn_right(dir)
+    end
+
+    break if history[pos].include? dir
+    history[pos] |= [dir]
+  end
+  :loop
 end
 
 def day06(lines)
@@ -57,11 +82,10 @@ def day06(lines)
   end.to_set
   pos = start_pos(lines)
 
-  history, _ = walk(walls, dims, pos, :n)
+  history, _, loop_count = walk(walls, dims, pos, :n)
+  p loop_count
   [
     history.length,
-    history.keys.count do |new_wall|
-      walk(walls | [new_wall], dims, pos, :n)[1] == :loop
-    end,
+    loop_count,
   ]
 end

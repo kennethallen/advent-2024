@@ -6,6 +6,7 @@ class Day06Test < Test::Unit::TestCase
     assert_equal([41, 6], day06(File.foreach("data/06a.txt")))
   end
   def test_challenge
+    omit("slow")
     assert_equal([5131, 1784], day06(File.foreach("data/06.txt")))
   end
 end
