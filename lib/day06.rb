@@ -1,13 +1,13 @@
 private def step((y, x), dir, (y_bound, x_bound))
   case dir
   when :n
-    [y-1, x] unless y <= 0
+    [y-1, x] if y > 0
   when :s
-    [y+1, x] unless y+1 >= y_bound
+    [y+1, x] if y+1 < y_bound
   when :e
-    [y, x+1] unless x+1 >= x_bound
+    [y, x+1] if x+1 < x_bound
   when :w
-    [y, x-1] unless x <= 0
+    [y, x-1] if x > 0
   end
 end
 
@@ -32,12 +32,11 @@ private def start_pos(lines)
       end
     end
   end
-  throw :not_found
 end
 
 private def walk(lines, dims, pos, dir)
   history = Hash.new {|h, k| h[k] = Set.new }
-  while !history[pos].include? dir
+  until history[pos].include? dir
     history[pos] << dir
 
     forward = step(pos, dir, dims)
@@ -60,12 +59,15 @@ def day06(lines)
 
   [
     walk(lines, dims, pos, :n)[0].length,
-    0,
-    #(0...dims[0]).sum do |y|
-      #(0...dims[1]).count do |x|
-        #return false if lines[y][x] == "#"
-
-      #end
-    #end,
+    (0...dims[0]).sum do |y|
+      (0...dims[1]).count do |x|
+        lines[y][x] != "#" && begin
+          new_lines = lines.dup
+          new_lines[y] = new_lines[y].dup
+          new_lines[y][x] = "#"
+          walk(new_lines, dims, pos, :n)[1] == :loop
+        end
+      end
+    end,
   ]
 end
