@@ -12,7 +12,7 @@ def day05(lines)
   end
 
   right, wrong = updates.partition do |u|
-    page_nums = Hash[u.each_with_index.to_a]
+    page_nums = u.each_with_index.to_h
     rules.all? do |r|
       r.map {|n| page_nums[n] }.compact.each_cons(2).all? {|a, b| a < b }
     end
