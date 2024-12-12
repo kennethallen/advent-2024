@@ -11,6 +11,7 @@ def day12(lines)
     sym = map[start[0]][start[1]]
     perim = 0
     area = 0
+    walls = Set.new
     to_visit = [start]
     while cell = to_visit.pop
       if unvisited.include? cell
@@ -18,14 +19,30 @@ def day12(lines)
         friends = neighbors(cell, [y_limit, x_limit]).filter {|y, x| map[y][x] == sym }
         perim += 4 - friends.length
         area += 1
+        y, x = cell
+        walls += [
+          ([y, x  , :v] unless friends.include? [y, x-1]),
+          ([y, x+1, :v] unless friends.include? [y, x+1]),
+          ([x, y  , :h] unless friends.include? [y-1, x]),
+          ([x, y+1, :h] unless friends.include? [y+1, x]),
+        ].compact
         to_visit += friends
       end
     end
-    regions << [start, sym, perim, area]
+    wall_count = walls.count do |parallel, perp, dir|
+      [
+        !walls.include?([parallel+1, perp, dir]),
+        begin
+          other_dir = case dir when :h then :v else :h end
+          (perp..perp+1).all? {|perp| walls.include? [perp, parallel+1, other_dir] }
+        end,
+      ].any?
+    end
+    regions << [start, sym, perim, area, wall_count]
   end
 
   [
-    regions.sum {|_, _, perim, area| perim * area },
-    0,
+    regions.sum {|_, _, perim, area, _| perim * area },
+    regions.sum {|_, _, _, area, wall_count| wall_count * area },
   ]
 end
