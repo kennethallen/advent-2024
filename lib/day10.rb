@@ -1,3 +1,5 @@
+require 'util'
+
 private def djikstra(start)
   to_visit = [[start, []]]
   visited = {}
@@ -31,13 +33,8 @@ private def djikstra_all(start)
   visited
 end
 
-private def nexts((y, x), map, (y_limit, x_limit))
-  [
-    ([y-1, x] if y > 0),
-    ([y+1, x] if y+1 < y_limit),
-    ([y, x-1] if x > 0),
-    ([y, x+1] if x+1 < x_limit),
-  ].compact.filter do |ay, ax|
+private def nexts((y, x), map, dims)
+  neighbors([y, x], dims).filter do |ay, ax|
     map[ay][ax] - map[y][x] == 1
   end
 end

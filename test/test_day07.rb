@@ -1,6 +1,6 @@
 require 'test/unit'
 require 'day07'
-require 'util'
+require 'test_util'
 
 class Day07Test < Test::Unit::TestCase
   def test_sample
