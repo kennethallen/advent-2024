@@ -34,7 +34,7 @@ def day12(lines)
         !walls.include?([parallel+1, perp, dir]),
         begin
           other_dir = case dir when :h then :v else :h end
-          (perp..perp+1).all? {|perp| walls.include? [perp, parallel+1, other_dir] }
+          (perp-1..perp).all? {|perp0| walls.include? [perp0, parallel+1, other_dir] }
         end,
       ].any?
     end

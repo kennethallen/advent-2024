@@ -10,6 +10,6 @@ class Day12Test < Test::Unit::TestCase
     assert_equal([1184, 368], day12(File.foreach("data/12e.txt")))
   end
   def test_challenge
-    assert_equal([1375574, 0], day12(File.foreach("data/12.txt")))
+    assert_equal([1375574, 830566], day12(File.foreach("data/12.txt")))
   end
 end
