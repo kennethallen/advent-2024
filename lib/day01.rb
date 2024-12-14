@@ -1,3 +1,5 @@
+require "util"
+
 def day01(lines)
   lines = lines.map do |l|
     /^(\d+)\s+(\d+)$/.match(l)[1..2].map(&:to_i)
@@ -7,10 +9,7 @@ def day01(lines)
     lines.map {|l| l[i] }.sort!
   end
 
-  l1_counts = Hash.new(0)
-  lists[1].each do |n|
-    l1_counts[n] += 1
-  end
+  l1_counts = count(lists[1])
 
   [
     lists[0].zip(lists[1]).map {|v0, v1| (v0 - v1).abs }.sum,

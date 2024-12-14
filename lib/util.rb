@@ -6,3 +6,9 @@ def neighbors((y, x), (y_limit, x_limit))
     ([y, x+1] if x+1 < x_limit),
   ].compact
 end
+
+def count(xs)
+  c = Hash.new 0
+  xs.each {|x| c[x] += 1 }
+  c
+end
