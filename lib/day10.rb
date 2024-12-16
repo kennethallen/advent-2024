@@ -1,23 +1,5 @@
 require 'util'
 
-private def djikstra(start)
-  to_visit = [[start, []]]
-  visited = {}
-  while entry = to_visit.pop
-    node, path = entry
-    unless visited.include? node
-      visited[node] = path
-      forward_path = path + [node]
-      (yield node).each do |forward|
-        unless visited.include? forward
-          to_visit.prepend [forward, forward_path]
-        end
-      end
-    end
-  end
-  visited
-end
-
 private def djikstra_all(start)
   to_visit = [[start, []]]
   visited = Hash.new {|h, k| h[k] = Set.new }
@@ -53,8 +35,8 @@ def day10(lines)
   [
     trailheads.sum do |y, x|
       djikstra([y, x]) do |pos|
-        nexts(pos, map, dims)
-      end.count do |(end_y, end_x), _|
+        nexts(pos, map, dims).map {|n| [1, n] }
+      end.count do |(end_y, end_x), _, _|
         map[end_y][end_x] == 9
       end
     end,
