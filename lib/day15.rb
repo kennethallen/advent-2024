@@ -1,64 +1,97 @@
-def step15((y, x), move, (y_limit, x_limit))
+private def step15((y, x), move)
   case move
   when "<"
-    [y, x-1] if x > 0
+    [y, x-1]
   when ">"
-    [y, x+1] if x+1 < x_limit
+    [y, x+1]
   when "^"
-    [y-1, x] if y > 0
+    [y-1, x]
   when "v"
-    [y+1, x] if y+1 < y_limit
+    [y+1, x]
   end
+end
+
+private def sim15(map_data, moves)
+  map = map_data[...-1].map do |r|
+    r[...-1].each_char.flat_map do |c|
+      yield c
+    end
+  end
+  robot = map.each_with_index.flat_map do |r, y|
+    r.each_with_index.filter_map do |c, x|
+      [y, x] if c == :robot
+    end
+  end.first
+
+  dims = [map.length, map[0].length]
+  moves.each_char do |move|
+    catch(:exit) do
+      to_assess = [robot]
+      plan = {}
+      while curs = to_assess.pop
+        next if plan.include? curs
+        next unless cell = map[curs[0]][curs[1]]
+        plan[curs] = cell
+        dest = step15(curs, move)
+        to_assess += [dest] + case cell
+        when :wall
+          throw :exit
+        when :robot, :box
+          []
+        when :box_l
+          [[curs[0], curs[1]+1]]
+        when :box_r
+          [[curs[0], curs[1]-1]]
+        end
+      end
+
+      plan.each do |(y, x), _|
+        map[y][x] = nil
+      end
+      plan.each do |pos, cell|
+        y, x = step15(pos, move)
+        map[y][x] = cell
+      end
+      robot = step15(robot, move)
+    end
+  end
+  map
 end
 
 def day15(lines)
   map, moves = lines.slice_after(/^$/).map(&:to_a)
-  robot = nil
-  map = map[1...-2].each_with_index.map do |r, y|
-    r[1...-2].each_char.each_with_index.map do |c, x|
-      case c
-      when "O"
-        :box
-      when "#"
-        :wall
-      when "@"
-        robot = [y, x]
-        nil
-      end
-    end
-  end
   moves = moves.map {|m| m[...-1] }.join
-  dims = [map.length, map[0].length]
-
-  moves.each_char do |move|
-    dest = robot
-    first_step = nil
-    while (dest = step15(dest, move, dims)) && map[dest[0]][dest[1]] != :wall
-      first_step ||= dest
-      unless map[dest[0]][dest[1]]
-        map[dest[0]][dest[1]] = :box
-        map[first_step[0]][first_step[1]] = nil
-        robot = first_step
-        break
-      end
-    end
-=begin
-    map.each_with_index do |r, y|
-      r.each_with_index do |c, x|
-        print case when robot == [y, x] then "@" when c == :box then "O" when c == :wall then "#" else "." end
-      end
-      puts
-    end
-    puts
-=end
-  end
 
   [
+    sim15(map, moves) do |c|
+      case c
+      when "O"
+        [:box]
+      when "#"
+        [:wall]
+      when "@"
+        [:robot]
+      else
+        [nil]
+      end
+    end,
+    sim15(map, moves) do |c|
+      case c
+      when "O"
+        [:box_l, :box_r]
+      when "#"
+        [:wall, :wall]
+      when "@"
+        [:robot, nil]
+      else
+        [nil, nil]
+      end
+    end,
+  ].map do |map|
     map.each_with_index.flat_map do |r, y|
       r.each_with_index.map do |c, x|
-        x+1 + 100*(y+1) if c == :box
+        x + 100*y if [:box_l, :box].to_set === c
       end
-    end.compact.sum,
-    0,
-  ]
+    end.compact.sum
+  end
 end
