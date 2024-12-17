@@ -23,7 +23,6 @@ private def sim15(map_data, moves)
     end
   end.first
 
-  dims = [map.length, map[0].length]
   moves.each_char do |move|
     catch(:exit) do
       to_assess = [robot]
