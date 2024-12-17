@@ -1,23 +1,16 @@
 require 'util'
 
-private def djikstra_all(start)
-  to_visit = [[start, []]]
-  visited = Hash.new {|h, k| h[k] = Set.new }
-  while entry = to_visit.pop
-    node, path = entry
-
-    visited[node] << path
-    forward_path = path + [node]
-    (yield node).each do |forward|
-      to_visit << [forward, forward_path]
-    end
+class Pather10
+include AStar
+  def initialize(map, dims)
+    @map = map
+    @dims = dims
   end
-  visited
-end
 
-private def nexts((y, x), map, dims)
-  neighbors([y, x], dims).filter do |ay, ax|
-    map[ay][ax] - map[y][x] == 1
+  def nexts((y, x))
+    neighbors([y, x], @dims).filter do |ay, ax|
+      @map[ay][ax] - @map[y][x] == 1
+    end.map {|n| [1, n] }
   end
 end
 
@@ -32,20 +25,18 @@ def day10(lines)
     end
   end
 
+  pather = Pather10.new(map, dims)
+
   [
     trailheads.sum do |y, x|
-      djikstra([y, x]) do |pos|
-        nexts(pos, map, dims).map {|n| [1, n] }
-      end.count do |(end_y, end_x), _, _|
+      pather.path([y, x])[1].keys.count do |end_y, end_x|
         map[end_y][end_x] == 9
       end
     end,
     trailheads.sum do |y, x|
-      djikstra_all([y, x]) do |pos|
-        nexts(pos, map, dims)
-      end.filter do |(end_y, end_x), _|
+      pather.path_all([y, x])[1].filter do |(end_y, end_x), _|
         map[end_y][end_x] == 9
-      end.sum {|_, paths| paths.length }
+      end.sum {|_, (_, paths)| paths.length }
     end,
   ]
 end

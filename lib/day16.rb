@@ -1,26 +1,74 @@
 require 'util'
 
-def djikstra_all_opt(start)
-  to_visit = PQueue.new([[0, start, []]]) {|(a, _, _), (b, _, _)| a < b }
-  visited = {}
-  while entry = to_visit.pop
-    cost, node, path = entry
-    if visited.include? node
-      old_cost, old_paths = visited[node]
-      next unless cost == old_cost
-      old_paths << path
-    else
-      visited[node] = [cost, [path]]
-    end
-    
-    forward_path = path + [node]
-    (yield node).each do |forward_cost, forward|
-      unless visited.include? forward
-        to_visit << [cost + forward_cost, forward, forward_path]
-      end
-    end
+class Pather16
+  include AStar
+
+  def initialize(walls, t_end)
+    @walls = walls
+    @t_end = t_end
   end
-  visited
+
+  def terminal?((_, pos)) = pos == @t_end
+
+  def heuristic((dir, (y, x)))
+    return 0
+    ty, tx = @t_end
+    (y - ty).abs + (x - tx).abs + (case dir
+    when :n
+      if y < ty
+        2000
+      elsif x != tx
+        1000
+      end
+    when :s
+      if y > ty
+        2000
+      elsif x != tx
+        1000
+      end
+    when :e
+      if x > tx
+        2000
+      elsif y != ty
+        1000
+      end
+    when :w
+      if x < tx
+        2000
+      elsif y != ty
+        1000
+      end
+    end || 0)
+  end
+
+  def nexts((dir, (y, x)))
+    nexts = [
+      case dir
+      when :e then :n
+      when :n then :w
+      when :w then :s
+      when :s then :e
+      end,
+      case dir
+      when :e then :s
+      when :n then :e
+      when :w then :n
+      when :s then :w
+      end,
+    ].map {|d| [1_000, [d, [y, x]]] }
+    sy, sx = case dir
+    when :e
+      [y, x+1]
+    when :w
+      [y, x-1]
+    when :n
+      [y-1, x]
+    when :s
+      [y+1, x]
+    end
+    nexts << [1, [dir, [sy, sx]]] unless @walls[sy][sx]
+    nexts
+  end
 end
 
 def day16(lines)
@@ -41,71 +89,21 @@ def day16(lines)
     end
   end
 
-  res = djikstra([:e, t_start]) do |dir, (y, x)|
-    nexts = [
-      case dir
-      when :e then :n
-      when :n then :w
-      when :w then :s
-      when :s then :e
-      end,
-      case dir
-      when :e then :s
-      when :n then :e
-      when :w then :n
-      when :s then :w
-      end,
-    ].map {|d| [1_000, [d, [y, x]]] }
-    sy, sx = case dir
-    when :e
-      [y, x+1]
-    when :w
-      [y, x-1]
-    when :n
-      [y-1, x]
-    when :s
-      [y+1, x]
-    end
-    nexts << [1, [dir, [sy, sx]]] unless walls[sy][sx]
-    nexts
-  end
-
-  all_res = djikstra_all_opt([:e, t_start]) do |dir, (y, x)|
-    nexts = [
-      case dir
-      when :e then :n
-      when :n then :w
-      when :w then :s
-      when :s then :e
-      end,
-      case dir
-      when :e then :s
-      when :n then :e
-      when :w then :n
-      when :s then :w
-      end,
-    ].map {|d| [1_000, [d, [y, x]]] }
-    sy, sx = case dir
-    when :e
-      [y, x+1]
-    when :w
-      [y, x-1]
-    when :n
-      [y-1, x]
-    when :s
-      [y+1, x]
-    end
-    nexts << [1, [dir, [sy, sx]]] unless walls[sy][sx]
-    nexts
-  end
-  _, all_paths = %i(n e s w).map do |dir|
-    cost, paths = all_res[[dir, t_end]]
-    [cost, paths.map{|p| p + [[dir, t_end]] }]
-  end.min_by {|cost, _| cost }
+  pather = Pather16.new(walls, t_end)
 
   [
-    %i(n e s w).map {|dir| res[[dir, t_end]][0] }.min,
-    all_paths.flat_map {|path| path.map {|_, pos| pos } }.uniq.count,
+    begin
+      res_end, res = pather.path [:e, t_start]
+      res[res_end][0]
+    end,
+    begin
+      res_ends, res = pather.path_all [:e, t_start]
+
+      res_ends.flat_map do |res_end|
+        _, paths = res[res_end]
+        [res_end] + paths.flat_map {|path| path }
+      end.map {|_, pos| pos }.uniq.count
+    end,
   ]
 end
 
