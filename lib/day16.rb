@@ -11,7 +11,6 @@ class Pather16
   def terminal?((_, pos)) = pos == @t_end
 
   def heuristic((dir, (y, x)))
-    return 0
     ty, tx = @t_end
     (y - ty).abs + (x - tx).abs + (case dir
     when :n
@@ -98,6 +97,21 @@ def day16(lines)
     end,
     begin
       res_ends, res = pather.path_all [:e, t_start]
+
+=begin
+      #res_ends.flat_map do |res_end|
+        #_, paths = res[[dir, t_end]]
+      res.flat_map do |res_end, (_, paths)|
+        #pp :a, res_end, paths.flat_map {|path| path }, :b
+        [res_end] + paths.flat_map {|path| path }
+      end.uniq.each do |state|
+        rem_end, rem_paths = pather.path state
+        cost, _ = rem_paths[rem_end]
+        h = pather.heuristic state
+        p [:oops, cost, h, state] if h > cost
+      end
+      raise :bye
+=end
 
       res_ends.flat_map do |res_end|
         _, paths = res[res_end]

@@ -69,7 +69,7 @@ module AStar
       (nexts node).each do |forward_cost, forward|
         unless visited.include? forward
           to_visit << [
-            cost + forward_cost + heuristic(forward),
+            cost + forward_cost,# + heuristic(forward),
             cost + forward_cost,
             forward,
             forward_path,
