@@ -28,8 +28,8 @@ def day14(lines)
         neighbors > 1 ? n : 0
       end
       p i
-      (0...y_limit).each do |y|
-        (0...x_limit).each do |x|
+      y_limit.times do |y|
+        x_limit.times do |x|
           robot_count = cells[[x, y]]
           print case robot_count
           when 0 then "."

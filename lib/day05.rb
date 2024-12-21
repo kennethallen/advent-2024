@@ -21,7 +21,7 @@ def day05(lines)
   wrong.each do |u|
     loop do
       changed = false
-      (0...u.length).each do |i|
+      u.length.times do |i|
         (i+1...u.length).each do |j|
           if rules.include? [u[j], u[i]]
             u[i], u[j] = u[j], u[i]

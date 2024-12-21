@@ -13,7 +13,7 @@ def day11(lines)
   lines.first.split(" ").each {|s| stones[s.to_i] += 1 }
 
   stones25 = nil
-  (0...75).each do |i|
+  75.times do |i|
     stones25 = stones if i == 25
     stones_old, stones = stones, Hash.new(0)
     stones_old.each do |s, n|

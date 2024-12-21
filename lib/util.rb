@@ -50,7 +50,7 @@ module AStar
     to_visit = PQueue.new([[0, 0, start, []]]) {|(a, _, _, _), (b, _, _, _)| a < b }
     visited = {}
     while entry = to_visit.pop
-      guess, cost, node, path = entry
+      _, cost, node, path = entry
 
       break if optimal && cost > optimal
       if terminal? node
