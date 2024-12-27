@@ -77,6 +77,6 @@ module AStar
         end
       end
     end
-  [terms, visited]
+    [terms, visited]
   end
 end

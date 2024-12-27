@@ -18,6 +18,23 @@ class Pather19
   end
 end
 
+class MemoPather
+  def initialize(towels)
+    @towels = towels
+    @mem = {"" => 1}
+  end
+  
+  def count_paths(state)
+    @mem[state] || begin
+      @mem[state] = @towels.filter do |t|
+        t == state[...t.length]
+      end.sum do |t|
+        count_paths state[t.length..]
+      end
+    end
+  end
+end
+
 def day19(lines)
   towels, _, *designs = lines.to_a
   towels = towels[...-1].split(/, /)
@@ -28,6 +45,15 @@ def day19(lines)
     designs.count do |d|
       pather.path(d)[0]
     end,
-    0,
+=begin
+    designs.sum do |d|
+      terms, paths = pather.path_all(d, paths)
+      terms.sum {|t| paths[t][1].length }
+    end,
+=end
+    begin
+      mempath = MemoPather.new(towels)
+      designs.sum {|d| mempath.count_paths d }
+    end
   ]
 end
